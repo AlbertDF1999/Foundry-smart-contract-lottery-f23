@@ -31,14 +31,14 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 //@notice This contract is for creating a simple raffle
 //@dev Implements chainlink VRFv2.5
 
-error Raffle_SendEnoughEth();
-error Raffle_TransferFailed();
-error Raffle_RaffleNotOpen();
-error Raffle_UpkeepNotNeeded(
-    uint256 balance,
-    uint256 playersLenght,
-    uint256 raffleState
-);
+// error Raffle_SendEnoughEth();
+// error Raffle_TransferFailed();
+// error Raffle_RaffleNotOpen();
+// error Raffle_UpkeepNotNeeded(
+//     uint256 balance,
+//     uint256 playersLenght,
+//     uint256 raffleState
+// );
 
 contract Raffle is VRFConsumerBaseV2Plus {
     //Type declarations
@@ -47,6 +47,15 @@ contract Raffle is VRFConsumerBaseV2Plus {
         OPEN,
         CALCULATING
     }
+
+    error Raffle_SendEnoughEth();
+    error Raffle_TransferFailed();
+    error Raffle_RaffleNotOpen();
+    error Raffle_UpkeepNotNeeded(
+        uint256 balance,
+        uint256 playersLenght,
+        uint256 raffleState
+    );
 
     //State Variables
     uint256 private s_lastTimeStamp;
@@ -194,6 +203,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getRaffleState() public view returns (RaffleState) {
         return s_raffleState;
+    }
+
+    function getPlayer(uint256 playerIndex) public view returns (address) {
+        return s_players[playerIndex];
     }
 }
 

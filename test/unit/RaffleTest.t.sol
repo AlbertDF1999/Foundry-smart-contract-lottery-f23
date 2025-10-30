@@ -21,6 +21,9 @@ contract RaffleTest is Test {
     address private PLAYER = makeAddr("PLAYER");
     uint256 private constant STARTING_PLAYER_BALANCE = 10 ether;
 
+    event RaffleEntered(address indexed player);
+    event WinnerPicked(address indexed winner);
+
     function setUp() public {
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.deployRaffle();
@@ -31,9 +34,52 @@ contract RaffleTest is Test {
         gasLane = config.gasLane;
         subscriptionId = config.subscriptionId;
         callBackGasLimit = config.callBackGasLimit;
+
+        vm.deal(PLAYER, STARTING_PLAYER_BALANCE);
     }
 
     function testRaffleInitializesInOpenState() public view {
         assert(raffle.getRaffleState() == Raffle.RaffleState.OPEN);
+    }
+
+    function testRaffleRevertWhenYouDontPayEnough() public {
+        //arrange
+        vm.prank(PLAYER);
+        //act / assert
+        vm.expectRevert(Raffle.Raffle_SendEnoughEth.selector);
+        raffle.enterRaffle();
+    }
+
+    function testRaffleRecordsPlayersWhenTheyEnter() public {
+        //arrange
+        vm.prank(PLAYER);
+        //Act
+        raffle.enterRaffle{value: 10 ether}();
+        //assert
+        address playerRecorded = raffle.getPlayer(0);
+        assert(playerRecorded == PLAYER);
+    }
+
+    function testEnteringRaffleEmitsEvent() public {
+        //arrange
+        vm.prank(PLAYER);
+        //Act
+        vm.expectEmit(true, false, false, false, address(raffle));
+        emit RaffleEntered(PLAYER);
+        //assert
+        raffle.enterRaffle{value: _entranceFee}();
+    }
+
+    function testDontAllowPlayersToEnterWhenRaffleIsCalculating() public {
+        //ARRANGE
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: _entranceFee}();
+        vm.warp(block.timestamp + _interval + 1);
+        vm.roll(block.number + 1);
+        raffle.performUpkeep();
+        //ACT//ASSERT
+        vm.expectRevert(Raffle.Raffle_RaffleNotOpen.selector);
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: _entranceFee}();
     }
 }
