@@ -5,6 +5,7 @@ pragma solidity 0.8.19;
 import {Script} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "script/HelperConfig.sol";
+import {CreateSubscription} from "./Interactions.s.sol";
 
 contract DeployRaffle is Script {
     function deployRaffle() public returns (Raffle, HelperConfig) {
@@ -12,6 +13,14 @@ contract DeployRaffle is Script {
         //local => deploy mocks, get local config
         //sepolia => get sepolia config
         HelperConfig.NetworkConfig memory config = netConf.getConfig();
+
+        if (config.subscriptionId == 0) {
+            CreateSubscription createSub = new CreateSubscription();
+            (config.subscriptionId, config.vrf_coordinator) = createSub
+                .createSubscription(config.vrf_coordinator);
+        }
+
+        //Now we need to fund our subscription
 
         vm.startBroadcast();
         Raffle raffle = new Raffle(
