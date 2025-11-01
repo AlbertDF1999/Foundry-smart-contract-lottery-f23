@@ -82,4 +82,33 @@ contract RaffleTest is Test {
         vm.prank(PLAYER);
         raffle.enterRaffle{value: _entranceFee}();
     }
+
+    ///////////////////////////////////////CHECKUPKEEP TESTS
+
+    function testCheckUpKeepReturnsFalseIfItHasNoBalance() public {
+        //arrange
+        vm.warp(block.timestamp + _interval + 1);
+        vm.roll(block.number + 1);
+
+        //Act
+        bool upKeepNeeded = raffle.checkUpkeep();
+
+        //assert
+        assert(!upKeepNeeded);
+    }
+
+    function testCheckUpKeepReturnsFalseIfRaffleIsNotOpen() public {
+        //ARRANGE
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: _entranceFee}();
+        vm.warp(block.timestamp + _interval + 1);
+        vm.roll(block.number + 1);
+        raffle.performUpkeep();
+
+        //ACT
+        bool upKeepNeeded = raffle.checkUpkeep();
+
+        //ASSERT
+        assert(!upKeepNeeded);
+    }
 }
