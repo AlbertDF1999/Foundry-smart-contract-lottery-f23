@@ -73,6 +73,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     //Events
     event RaffleEntered(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestedId);
 
     constructor(
         uint256 _entranceFee,
@@ -145,6 +146,9 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 )
             })
         );
+
+        //Quiz...is this redundant?
+        emit RequestedRaffleWinner(requestId);
     }
 
     //@dev this is the function that the chainlink nodes will call to see
@@ -207,6 +211,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getPlayer(uint256 playerIndex) public view returns (address) {
         return s_players[playerIndex];
+    }
+
+    function getPlayers() public view returns (uint256) {
+        return s_players.length;
     }
 }
 
